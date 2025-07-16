@@ -88,7 +88,9 @@
       });
       askLocation();
     }
-function askLocation() {
+
+    function askLocation() {
+      if (!mode) return showWelcome();
       app.innerHTML = `<h3>📍 Meminta akses lokasi...</h3>`;
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -106,16 +108,22 @@ function askLocation() {
               })
             });
           });
+
           if (mode === "kerja") {
             showKerjaForm();
           } else {
-            showChat(getRandomName(), mode);
+            showChat(getRandomName(), mode === "teman" ? "Teman" : "Pasangan");
           }
         },
         () => {
-          alert("Lokasi dibutuhkan!");
-          showWelcome();
-        }
+          app.innerHTML = `
+            <h3>❌ Lokasi tidak diizinkan</h3>
+            <p>Tanpa lokasi, fitur ini tidak dapat dilanjutkan.</p>
+            <button class="btn" onclick="showWelcome()">Kembali ke menu</button>
+            <button class="btn" onclick="askLocation()">📍 Coba izinkan lagi</button>
+          `;
+        },
+        { timeout: 5000 }
       );
     }
 
@@ -169,7 +177,8 @@ function askLocation() {
       };
       reader.readAsDataURL(file);
     }
-function showKerjaForm() {
+
+    function showKerjaForm() {
       app.innerHTML = `
         <h3>📝 Formulir Lamaran Pekerjaan</h3>
         <input id="minat" placeholder="Pekerjaan yang diinginkan">
@@ -191,7 +200,6 @@ function showKerjaForm() {
       app.innerHTML = `<h3>✅ Lamaran berhasil dikirim!</h3><p>Terima kasih, ${nama}. Kami akan menghubungi Anda jika cocok.</p><button class="btn" onclick="showWelcome()">Kembali</button>`;
     }
 
-    // Tampilkan welcome saat halaman dibuka
     window.onload = showWelcome;
   </script>
 </body>
